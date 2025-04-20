@@ -552,6 +552,17 @@
         }
     </style>
 </head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart - Hostel Bites</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" href="Pictures/logo.jpg">
+    <!-- Same CSS as before -->
+    <!-- All your existing CSS remains the same -->
+</head>
 <body>
     <!-- Menu toggle for mobile -->
     <button class="menu-toggle" id="menuToggle">
@@ -566,7 +577,6 @@
         <ul>
             <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
             <li><a href="menu.html"><i class="fas fa-utensils"></i> Menu</a></li>
-            <!-- <li><a href="#"><i class="fas fa-info-circle"></i> About</a></li> -->
             <li><a href="contact.html"><i class="fas fa-phone"></i> Contact</a></li>
             <li><a href="cart_index.html" class="active"><i class="fas fa-shopping-cart"></i> Cart <span id="nav-cart-count">(0)</span></a></li>
             <li><a href="#"><i class="fas fa-user"></i> Account</a></li>
@@ -615,8 +625,8 @@
                 <span>Total</span>
                 <span id="total">Rs0.00</span>
             </div>
-            <a href="#" class="checkout-btn">Proceed to Checkout</a>
-            <a href="index.html" class="continue-shopping"><i class="fas fa-arrow-left"></i> Continue Shopping</a>
+            <a href="checkout.html" class="checkout-btn" id="checkout-btn">Proceed to Checkout</a>
+            <a href="menu.html" class="continue-shopping"><i class="fas fa-arrow-left"></i> Continue Shopping</a>
         </div>
     </div>
 
@@ -642,8 +652,7 @@
             <div class="footer-section footer-links">
                 <h3>Quick Links</h3>
                 <a href="index.html">Home</a>
-                <a href="#">Menu</a>
-                <!-- <a href="#">About Us</a> -->
+                <a href="menu.html">Menu</a>
                 <a href="contact.html">Contact</a>
                 <a href="#">Terms & Conditions</a>
                 <a href="#">Privacy Policy</a>
@@ -661,6 +670,7 @@
         </div>
     </footer>
 
-   <script src="script.js"></script>
+    <!-- Link to our script file -->
+    <script src="script.js"></script>
 </body>
 </html>

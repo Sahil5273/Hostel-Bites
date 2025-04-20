@@ -2,37 +2,35 @@
 const menuToggle = document.getElementById('menuToggle');
 const sideNav = document.getElementById('sideNav');
 
-menuToggle.addEventListener('click', () => {
-    sideNav.classList.toggle('active');
-});
+if (menuToggle && sideNav) {
+    menuToggle.addEventListener('click', () => {
+        sideNav.classList.toggle('active');
+    });
 
-// Close menu when clicking outside on mobile
-document.addEventListener('click', (e) => {
-    if (window.innerWidth <= 992) {
-        if (!sideNav.contains(e.target) && e.target !== menuToggle) {
-            sideNav.classList.remove('active');
+    // Close menu when clicking outside on mobile
+    document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 992) {
+            if (!sideNav.contains(e.target) && e.target !== menuToggle) {
+                sideNav.classList.remove('active');
+            }
         }
-    }
-});
+    });
+}
 
 // Main functionality for cart and categories
 document.addEventListener('DOMContentLoaded', function() {
     // Get all add to cart buttons
     const addToCartButtons = document.querySelectorAll('.add-to-cart');
     
-    console.log("Found", addToCartButtons.length, "add-to-cart buttons"); // Debug logging
-    
     // Add click event listeners to all buttons
     addToCartButtons.forEach(button => {
         button.addEventListener('click', function() {
-            console.log("Add to cart button clicked"); // Debug logging
-            
             // Get the parent item div (works for both featured-item and menu-item)
             const itemElement = this.closest('.featured-item') || this.closest('.menu-item');
             
             // Extract item details
             const name = itemElement.querySelector('h3').innerText;
-            const description = itemElement.querySelector('p').innerText;
+            const description = itemElement.querySelector('p') ? itemElement.querySelector('p').innerText : '';
             
             // Handle different price formats
             const priceElement = itemElement.querySelector('.price span') || itemElement.querySelector('.price');
@@ -94,6 +92,11 @@ document.addEventListener('DOMContentLoaded', function() {
         updateCartDisplay();
     }
 
+    // Initialize checkout page if on checkout page
+    if (document.querySelector('.order-summary')) {
+        initializeCheckoutPage();
+    }
+
     // Category filter functionality
     const categoryFilters = document.querySelectorAll('.category-filter');
     categoryFilters.forEach(filter => {
@@ -108,6 +111,131 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// Function to initialize checkout page
+// Function to initialize checkout page
+function initializeCheckoutPage() {
+    // Try to get cart items from localStorage
+    let cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+    
+    // If no items in localStorage, use sample data for testing
+    if (cartItems.length === 0) {
+        cartItems = [
+            {
+                name: "Classic Burger",
+                price: 188.99,
+                quantity: 1
+            },
+            {
+                name: "Margherita Pizza",
+                price: 112.99,
+                quantity: 2
+            }
+        ];
+    }
+    
+    const orderItemsContainer = document.querySelector('.order-items');
+    const subtotalElement = document.getElementById('subtotal') || document.querySelector('.summary-item:nth-child(1) span:last-child');
+    const taxElement = document.querySelector('.summary-item:nth-child(3) span:last-child');
+    const totalElement = document.querySelector('.summary-total span:last-child');
+    
+    // Calculate totals
+    let subtotal = 0;
+    const deliveryFee = 30; // Fixed delivery fee
+    const taxRate = 0.05; // 5% tax
+    
+    // Clear existing items
+    if (orderItemsContainer) {
+        orderItemsContainer.innerHTML = '';
+        
+        // Add each item to the order summary
+        cartItems.forEach((item) => {
+            const itemTotal = item.price * item.quantity;
+            subtotal += itemTotal;
+            
+            const itemElement = document.createElement('div');
+            itemElement.className = 'order-item';
+            itemElement.innerHTML = `
+                <div class="item-name">
+                    <span>${item.quantity}</span>
+                    ${item.name}
+                </div>
+                <div class="item-price">Rs${itemTotal.toFixed(2)}</div>
+            `;
+            orderItemsContainer.appendChild(itemElement);
+        });
+    }
+    
+    // Calculate tax and total
+    const tax = subtotal * taxRate;
+    const total = subtotal + deliveryFee + tax;
+    
+    // Update the summary
+    if (subtotalElement) subtotalElement.textContent = `Rs${subtotal.toFixed(2)}`;
+    if (taxElement) taxElement.textContent = `Rs${tax.toFixed(2)}`;
+    if (document.querySelector('.summary-item:nth-child(2) span:last-child')) {
+        document.querySelector('.summary-item:nth-child(2) span:last-child').textContent = `Rs${deliveryFee.toFixed(2)}`;
+    }
+    if (totalElement) totalElement.textContent = `Rs${total.toFixed(2)}`;
+    
+    // Handle place order button
+    const placeOrderBtn = document.getElementById('place-order-btn');
+    if (placeOrderBtn) {
+        placeOrderBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Validate form
+            const form = document.getElementById('order-form');
+            if (form && !form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            // Show order tracking section
+            const orderTracking = document.getElementById('order-tracking');
+            if (orderTracking) {
+                orderTracking.style.display = 'block';
+                if (document.getElementById('driver-info')) {
+                    document.getElementById('driver-info').style.display = 'flex';
+                }
+                
+                // Scroll to tracking section
+                orderTracking.scrollIntoView({ behavior: 'smooth' });
+            }
+            
+            // Clear cart after order is placed
+            localStorage.removeItem('cartItems');
+            
+            // Update cart count in nav
+            updateNavCartCount();
+        });
+    }
+    
+    // Handle delivery time selection
+    const deliveryTimeSelect = document.getElementById('delivery-time');
+    const scheduledTimeContainer = document.getElementById('scheduled-time-container');
+    
+    if (deliveryTimeSelect && scheduledTimeContainer) {
+        deliveryTimeSelect.addEventListener('change', function() {
+            if (this.value === 'schedule') {
+                scheduledTimeContainer.style.display = 'block';
+            } else {
+                scheduledTimeContainer.style.display = 'none';
+            }
+        });
+    }
+}
+
+// Make sure the function is called when the page is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    if (document.querySelector('.order-summary')) {
+        initializeCheckoutPage();
+    }
+});
+
+// Rest of your existing functions remain the same...
+// (filterMenuItems, showToast, updateNavCartCount, updateCartDisplay, updateQuantity, removeFromCart)
+// These functions don't need any changes
 
 // Function to filter menu items by category
 function filterMenuItems(category) {
@@ -126,14 +254,10 @@ function filterMenuItems(category) {
 
 // Function to show toast notification
 function showToast(message) {
-    console.log("Showing toast:", message); // Debug logging
-    
     // Create toast if it doesn't exist
     let toast = document.getElementById('toast');
     
     if (!toast) {
-        console.log("Creating new toast element"); // Debug logging
-        
         toast = document.createElement('div');
         toast.id = 'toast';
         toast.className = 'toast';
@@ -147,47 +271,12 @@ function showToast(message) {
         toast.appendChild(span);
         
         document.body.appendChild(toast);
-        
-        // Add toast styles if not already in stylesheet
-        if (!document.querySelector('style#toast-style')) {
-            const style = document.createElement('style');
-            style.id = 'toast-style';
-            style.textContent = `
-                .toast {
-                    position: fixed;
-                    bottom: 30px;
-                    right: 30px;
-                    background-color: var(--success);
-                    color: white;
-                    padding: 15px 25px;
-                    border-radius: 8px;
-                    display: flex;
-                    align-items: center;
-                    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-                    z-index: 1000;
-                    transform: translateY(100px);
-                    opacity: 0;
-                    transition: all 0.3s ease;
-                }
-                .toast.show {
-                    transform: translateY(0);
-                    opacity: 1;
-                }
-                .toast i {
-                    margin-right: 10px;
-                    font-size: 18px;
-                }
-            `;
-            document.head.appendChild(style);
-        }
     }
     
     // Update toast message
     const messageElement = document.getElementById('toast-message');
     if (messageElement) {
         messageElement.textContent = message;
-    } else {
-        console.error("Toast message element not found"); // Debug logging
     }
     
     // Show toast
