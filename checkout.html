@@ -994,6 +994,34 @@
             </div>
 
 <script src="script.js"></script>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+<!-- Firebase Configuration -->
+<script>
+    
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+  apiKey: "AIzaSyBkuyypVzmnpoRi6Gg_AcNgFNtTSvjEIT4",
+  authDomain: "hostelbites-vitb.firebaseapp.com",
+  projectId: "hostelbites-vitb",
+  storageBucket: "hostelbites-vitb.firebasestorage.app",
+  messagingSenderId: "1038066775904",
+  appId: "1:1038066775904:web:34167b58200c3c33401005",
+  measurementId: "G-SJFZXH32B0"
+};
+  
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  
+  // Initialize Firestore
+  const db = firebase.firestore();
+</script>
+
+<!-- Your order processing script -->
+<script src="order.js"></script>
 
 </body>
 </html>

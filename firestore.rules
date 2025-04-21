@@ -1,0 +1,13 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow public read access to orders
+    match /orders/{orderId} {
+      allow read: if request.auth != null;
+      allow create: if true; // Allow anonymous order creation
+      allow update: if false; // Only update via admin or server functions
+    }
+    
+    // Add more rules as needed for other collections
+  }
+}
