@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hostel Bites - Delivery Page</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <!-- CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #ff6b35;
+            --secondary: #f7c59f;
+            --dark: #2b2d42;
+            --light: #edf2f4;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: var(--dark);
+        }
+        
+        .navbar {
+            background-color: var(--primary);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: white !important;
+        }
+        
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            background-color: var(--primary);
+            color: white;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 15px;
+        }
+        
+        .status-badge {
+            font-size: 0.8rem;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+        
+        .item-card {
+            border-left: 4px solid var(--primary);
+            background-color: white;
+            margin-bottom: 10px;
+            border-radius: 8px;
+        }
+        
+        .loader {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 300px;
+        }
+        
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            color: var(--primary);
+        }
+        
+        .order-section {
+            background-color: white;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .order-header {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .item-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        
+        .price {
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .no-orders {
+            text-align: center;
+            padding: 100px 0;
+        }
+        
+        .order-id {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+        
+        .delivery-details {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .order-totals {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .grand-total {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        #login-container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .auth-btn {
+            background-color: var(--primary);
+            border: none;
+            padding: 10px 16px;
+            color: white;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+        
+        .auth-btn:hover {
+            background-color: #e55a29;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 8px;
+            background-color: var(--light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-utensils me-2"></i>
+                Hostel Bites
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="#">
+                            <i class="fas fa-home me-1"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="#">
+                            <i class="fas fa-motorcycle me-1"></i> Deliveries
+                        </a>
+                    </li>
+                    <li class="nav-item" id="auth-status">
+                        <!-- Auth status will be added here dynamically -->
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Authentication container (initially hidden) -->
+        <div id="login-container" style="display: none;">
+            <h3 class="mb-4 text-center">Delivery Staff Login</h3>
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i> You need to login to view and manage deliveries
+            </div>
+            <form id="login-form">
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" required>
+                </div>
+                <button type="submit" class="btn auth-btn w-100">Login</button>
+            </form>
+            <div class="mt-3 text-center">
+                <button id="anon-login-btn" class="btn btn-sm btn-outline-secondary">
+                    Continue as Guest
+                </button>
+            </div>
+        </div>
+        
+        <!-- Orders content container (initially hidden) -->
+        <div id="content-container" style="display: none;">
+            <div class="row mb-4">
+                <div class="col">
+                    <h2>Active Deliveries</h2>
+                    <p class="text-muted">Manage and track current delivery orders</p>
+                </div>
+            </div>
+            
+            <!-- Loader -->
+            <div id="loader" class="loader">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            
+            <!-- Orders Container -->
+            <div id="orders-container" class="row" style="display: none;">
+                <!-- Orders will be dynamically added here -->
+            </div>
+            
+            <!-- No Orders Message -->
+            <div id="no-orders" class="no-orders" style="display: none;">
+                <i class="fas fa-box-open" style="font-size: 4rem; color: #ccc; margin-bottom: 20px;"></i>
+                <h3>No Orders Found</h3>
+                <p class="text-muted">There are currently no active delivery orders.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyBkuyypVzmnpoRi6Gg_AcNgFNtTSvjEIT4",
+    authDomain: "hostelbites-vitb.firebaseapp.com",
+    projectId: "hostelbites-vitb",
+    storageBucket: "hostelbites-vitb.appspot.com",
+    messagingSenderId: "1038066775904",
+    appId: "1:1038066775904:web:34167b58200c3c33401005",
+    measurementId: "G-SJFZXH32B0"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+// Enable offline persistence
+db.enablePersistence()
+  .catch((err) => {
+      if (err.code == 'failed-precondition') {
+          console.log('Persistence failed: Multiple tabs open');
+      } else if (err.code == 'unimplemented') {
+          console.log('Persistence not available in this browser');
+      }
+  });
+
+// DOM Elements
+const loginContainer = document.getElementById('login-container');
+const contentContainer = document.getElementById('content-container');
+const loginForm = document.getElementById('login-form');
+const anonLoginBtn = document.getElementById('anon-login-btn');
+const authStatus = document.getElementById('auth-status');
+const loaderElement = document.getElementById('loader');
+const ordersContainer = document.getElementById('orders-container');
+const noOrdersElement = document.getElementById('no-orders');
+
+// Function to format price
+function formatPrice(price) {
+    return '₹' + parseFloat(price).toFixed(2);
+}
+
+// Function to format timestamp
+function formatDate(timestamp) {
+    if (!timestamp) return 'N/A';
+    
+    const date = timestamp.toDate();
+    return date.toLocaleString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+// Fixed Function to get status badge class - added null check
+function getStatusBadgeClass(status) {
+    // Check if status is undefined or null before accessing toLowerCase
+    if (!status) {
+        return 'bg-secondary';
+    }
+    
+    switch(status.toLowerCase()) {
+        case 'placed':
+            return 'bg-info';
+        case 'preparing':
+            return 'bg-warning';
+        case 'out_for_delivery':
+            return 'bg-primary';
+        case 'delivered':
+            return 'bg-success';
+        case 'cancelled':
+            return 'bg-danger';
+        default:
+            return 'bg-secondary';
+    }
+}
+
+// Fixed Function to create an order card - added more null checks
+function createOrderCard(order, id) {
+    // Handle potentially missing data with default values
+    const payment = order.payment || { status: 'unknown', method: 'unknown' };
+    const statusBadgeClass = getStatusBadgeClass(payment.status);
+    const formattedDate = formatDate(order.timestamp);
+    
+    let itemsHTML = '';
+    
+    // Generate items HTML
+    if (order.items && order.items.length > 0) {
+        order.items.forEach(item => {
+            // Add null checks for each item property
+            const image = item.image || 'https://via.placeholder.com/80';
+            const name = item.name || 'Unnamed Item';
+            const description = item.description || '';
+            const price = item.price || 0;
+            const quantity = item.quantity || 1;
+            
+            itemsHTML += `
+            <div class="row item-card p-3 align-items-center">
+                <div class="col-md-2 col-4">
+                    <img src="${image}" class="item-image" alt="${name}">
+                </div>
+                <div class="col-md-7 col-8">
+                    <h6 class="mb-0">${name}</h6>
+                    <small class="text-muted">${description}</small>
+                </div>
+                <div class="col-md-3 col-12 mt-2 mt-md-0 text-md-end">
+                    <div class="price">${formatPrice(price)}</div>
+                    <div class="quantity text-muted">Qty: ${quantity}</div>
+                </div>
+            </div>
+            `;
+        });
+    } else {
+        itemsHTML = '<div class="p-3 text-muted">No items found</div>';
+    }
+    
+    // Create delivery details section with additional null checks
+    const deliveryDetails = `
+    <div class="delivery-details">
+        <h6><i class="fas fa-map-marker-alt me-2"></i>Delivery Location</h6>
+        <div class="row">
+            <div class="col-md-6">
+                <div><strong>Hostel:</strong> ${order.delivery && order.delivery.hostel ? order.delivery.hostel : 'Not specified'}</div>
+                <div><strong>Room:</strong> ${order.delivery && order.delivery.room ? order.delivery.room : 'Not specified'}</div>
+            </div>
+            <div class="col-md-6">
+                <div><strong>Floor:</strong> ${order.delivery && order.delivery.floor ? order.delivery.floor : 'Not specified'}</div>
+                ${order.delivery && order.delivery.landmark ? `<div><strong>Landmark:</strong> ${order.delivery.landmark}</div>` : ''}
+            </div>
+        </div>
+        <div class="mt-2">
+            <strong>Delivery Time:</strong> ${order.deliveryOptions && order.deliveryOptions.deliveryTime === 'asap' ? 'As soon as possible' : (order.deliveryOptions && order.deliveryOptions.scheduledTime ? order.deliveryOptions.scheduledTime : 'Not specified')}
+        </div>
+        ${order.deliveryOptions && order.deliveryOptions.notes ? `<div><strong>Notes:</strong> ${order.deliveryOptions.notes}</div>` : ''}
+    </div>
+    `;
+    
+    // Create order totals section with null checks
+    const orderTotals = `
+    <div class="order-totals">
+        <div class="row">
+            <div class="col-7">Subtotal</div>
+            <div class="col-5 text-end">${order.totals && order.totals.subtotal ? formatPrice(order.totals.subtotal) : '₹0.00'}</div>
+        </div>
+        <div class="row">
+            <div class="col-7">Delivery Fee</div>
+            <div class="col-5 text-end">${order.totals && order.totals.deliveryFee ? formatPrice(order.totals.deliveryFee) : '₹0.00'}</div>
+        </div>
+        <div class="row">
+            <div class="col-7">Tax</div>
+            <div class="col-5 text-end">${order.totals && order.totals.tax ? formatPrice(order.totals.tax) : '₹0.00'}</div>
+        </div>
+        <div class="row mt-2 grand-total">
+            <div class="col-7">Total</div>
+            <div class="col-5 text-end">${order.totals && order.totals.total ? formatPrice(order.totals.total) : '₹0.00'}</div>
+        </div>
+    </div>
+    `;
+    
+    // Create the contact information section with null checks
+    const contactInfo = `
+    <div class="mb-3">
+        <h6><i class="fas fa-user me-2"></i>Customer Information</h6>
+        <div><strong>Name:</strong> ${order.contact && order.contact.name ? order.contact.name : 'Not available'}</div>
+        <div><strong>Phone:</strong> ${order.contact && order.contact.phone ? order.contact.phone : 'Not available'}</div>
+        <div><strong>Email:</strong> ${order.contact && order.contact.email ? order.contact.email : 'Not available'}</div>
+    </div>
+    `;
+    
+    // Create the full order card
+    const orderCard = `
+    <div class="col-12">
+        <div class="order-section">
+            <div class="order-header">
+                <div>
+                    <h5 class="mb-1">Order #${id.substring(0, 8)}</h5>
+                    <div class="order-id text-muted">${id}</div>
+                    <div>${formattedDate}</div>
+                </div>
+                <div>
+                    <span class="badge ${statusBadgeClass} status-badge">
+                        ${payment.status ? payment.status.toUpperCase() : 'UNKNOWN'}
+                    </span>
+                    <div class="text-muted mt-1">Payment: ${payment.method ? payment.method.toUpperCase() : 'UNKNOWN'}</div>
+                </div>
+            </div>
+            
+            <div class="p-3">
+                ${order.contact ? contactInfo : '<div class="mb-3"><p class="text-muted">No contact information available.</p></div>'}
+                ${order.delivery ? deliveryDetails : '<div class="mb-3"><p class="text-muted">No delivery details available.</p></div>'}
+                
+                <h6 class="mb-3"><i class="fas fa-utensils me-2"></i>Items</h6>
+                ${itemsHTML}
+                
+                <div class="mt-3">
+                    ${order.totals ? orderTotals : '<p class="text-muted">No pricing information available.</p>'}
+                </div>
+            </div>
+        </div>
+    </div>
+    `;
+    
+    return orderCard;
+}
+
+// Function to update auth status display
+function updateAuthStatus(user) {
+    if (user) {
+        let displayName = user.isAnonymous ? 'Guest' : (user.displayName || user.email || 'User');
+        authStatus.innerHTML = `
+        <div class="user-info">
+            <div class="user-avatar">
+                ${displayName.charAt(0).toUpperCase()}
+            </div>
+            <a class="nav-link text-white" href="#" id="logout-btn">
+                Logout (${displayName})
+            </a>
+        </div>
+        `;
+        
+        // Add logout event listener
+        document.getElementById('logout-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            auth.signOut();
+        });
+    } else {
+        authStatus.innerHTML = `
+        <a class="nav-link text-white" href="#" id="nav-login-btn">
+            <i class="fas fa-sign-in-alt me-1"></i> Login
+        </a>
+        `;
+        
+        // Add login button event listener
+        document.getElementById('nav-login-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            showLoginForm();
+        });
+    }
+}
+
+// Function to show login form
+function showLoginForm() {
+    loginContainer.style.display = 'block';
+    contentContainer.style.display = 'none';
+}
+
+// Function to show content
+function showContent() {
+    loginContainer.style.display = 'none';
+    contentContainer.style.display = 'block';
+    fetchOrders();
+}
+
+// Function to fetch orders with improved error handling
+function fetchOrders() {
+    // Show loader and hide other elements
+    loaderElement.style.display = 'flex';
+    ordersContainer.style.display = 'none';
+    noOrdersElement.style.display = 'none';
+    
+    // Clear previous orders
+    ordersContainer.innerHTML = '';
+    
+    console.log("Attempting to fetch orders...");
+    
+    db.collection("orders")
+        .get()
+        .then((querySnapshot) => {
+            console.log("Query returned. Documents count:", querySnapshot.size);
+            
+            // Hide loader
+            loaderElement.style.display = 'none';
+            
+            if (querySnapshot.empty) {
+                // Show no orders message
+                console.log("No documents found");
+                noOrdersElement.style.display = 'block';
+                return;
+            }
+            
+            // Show orders container
+            ordersContainer.style.display = 'flex';
+            
+            // Process orders
+            querySnapshot.forEach((doc) => {
+                try {
+                    const order = doc.data();
+                    const orderId = doc.id;
+                    
+                    console.log("Processing order:", orderId);
+                    
+                    // Create order card HTML
+                    const orderCardHTML = createOrderCard(order, orderId);
+                    
+                    // Add order card to container
+                    ordersContainer.innerHTML += orderCardHTML;
+                } catch (err) {
+                    console.error("Error processing document:", err);
+                    // Instead of failing, just add an error card for this specific order
+                    ordersContainer.innerHTML += `
+                    <div class="col-12 mb-3">
+                        <div class="alert alert-warning">
+                            <h6>Error loading order: ${doc.id}</h6>
+                            <small>${err.message}</small>
+                        </div>
+                    </div>
+                    `;
+                }
+            });
+        })
+        .catch((error) => {
+            console.error("Error fetching orders:", error);
+            loaderElement.style.display = 'none';
+            
+            // Show error message with more details
+            ordersContainer.innerHTML = `
+            <div class="col-12">
+                <div class="alert alert-danger">
+                    <h5>Error loading orders</h5>
+                    <p>${error.message}</p>
+                    <button class="btn btn-outline-danger btn-sm mt-2" onclick="fetchOrders()">
+                        <i class="fas fa-sync-alt me-1"></i> Try Again
+                    </button>
+                </div>
+            </div>
+            `;
+            ordersContainer.style.display = 'flex';
+        });
+}
+
+// Login form event listener
+loginForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    
+    // Show loader
+    loaderElement.style.display = 'flex';
+    
+    // Sign in with email and password
+    auth.signInWithEmailAndPassword(email, password)
+        .catch((error) => {
+            console.error("Login error:", error);
+            loaderElement.style.display = 'none';
+            
+            // Show error alert
+            loginContainer.insertAdjacentHTML('afterbegin', `
+            <div class="alert alert-danger alert-dismissible fade show mb-3">
+                <strong>Login failed!</strong> ${error.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            `);
+        });
+});
+
+// Anonymous login event listener
+anonLoginBtn.addEventListener('click', () => {
+    // Show loader
+    loaderElement.style.display = 'flex';
+    
+    // Sign in anonymously
+    auth.signInAnonymously()
+        .catch((error) => {
+            console.error("Anonymous login error:", error);
+            loaderElement.style.display = 'none';
+            
+            // Show error alert
+            loginContainer.insertAdjacentHTML('afterbegin', `
+            <div class="alert alert-danger alert-dismissible fade show mb-3">
+                <strong>Login failed!</strong> ${error.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            `);
+        });
+});
+
+// Auth state change listener
+auth.onAuthStateChanged((user) => {
+    loaderElement.style.display = 'none';
+    
+    if (user) {
+        // User is signed in
+        console.log("User is signed in:", user.uid);
+        updateAuthStatus(user);
+        showContent();
+    } else {
+        // User is signed out
+        console.log("User is signed out");
+        updateAuthStatus(null);
+        showLoginForm();
+    }
+}); 
+</script>
+</body>
+</html>
